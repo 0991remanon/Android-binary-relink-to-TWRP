@@ -68,12 +68,12 @@ done
 }
 [ -z "$@" ] && ( echo "
   Usage:
-    ${0##*/} <dir> [<dirs>]
+    ${0##*/} <dir> [<dirs> <files> ...]
   or
-    ${0##*/} <file> [<files>]
+    ${0##*/} <file> [<files> <dirs> ...]
 
   Script for relink Android ELF files
-  from '/system/bin/linker(64) to
+  from /system/bin/linker(64) to
   /sbin/linker(64)
 "; exit; )
 main_funk "$@"
