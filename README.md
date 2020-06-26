@@ -3,5 +3,14 @@ Shell script for linking to /sbin/linker(64) android dynamically linked files th
 
 Tested on Ubuntu, Cygwin and Android
 
+  Usage:
+    totwrp <dir> [<dirs> <files> ...]
+  or
+    totwrp <file> [<files> <dirs> ...]
+
+  Script for relink Android ELF files
+  from /system/bin/linker(64) to
+  /sbin/linker(64)
+
 Attention! Some utilities will still be
 need some system libraries!
