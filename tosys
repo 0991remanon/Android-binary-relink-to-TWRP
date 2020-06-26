@@ -1,0 +1,80 @@
+main_funk() {
+local inst_status="";
+util_ck() {
+local ut_ch="$1";
+[ -z "$(which "$ut_ch" 2>/dev/null)" ] && local inst_status="$inst_status
+$ut_ch";
+}
+util_ck sed
+util_ck hexdump
+util_ck head
+util_ck cut
+util_ck tr
+util_ck find
+[ -n "$inst_status" ] && { echo -e "\e[31m
+  ERROR!
+  Not installed:${inst_status}\e[0m"; exit; }
+local arg_s="$@";
+local sbl="\x2F\x73\x79\x73\x74\x65\x6D\x2F\x62\x69\x6E\x2F\x6C\x69\x6E\x6B\x65\x72";
+local sbl64="\x2F\x73\x79\x73\x74\x65\x6D\x2F\x62\x69\x6E\x2F\x6C\x69\x6E\x6B\x65\x72\x36\x34";
+local sl="\x2F\x73\x62\x69\x6E\x2F\x6C\x69\x6E\x6B\x65\x72\x00\x00\x00\x00\x00\x00";
+local sl64="\x2F\x73\x62\x69\x6E\x2F\x6C\x69\x6E\x6B\x65\x72\x36\x34\x00\x00\x00\x00\x00\x00";
+head_func() {
+local jo_b="$1";
+dd if="$jo_b" bs=4 count=1 2>/dev/null |hexdump -C |head -n1 |cut -f3,4,5,6 -d ' ' |tr -d ' ';
+}
+if_file() {
+local F_td="$1";
+if [ "$(head_func "$F_td")" = "7f454c46" ]; then
+if [ "$(sed -n "/${sl64}/=" "$F_td")" = 1 ]; then
+echo -e "\e[31m
+  $F_td
+  This file is dynamically linked to /sbin/linker64
+  Patching...\e[0m";
+sed -i "s/${sl64}/${sbl64}/g" "$F_td";
+elif [ "$(sed -n "/${sl}/=" "$F_td")" = 1 ]; then
+echo -e "\e[31m
+  $F_td
+  This file is dynamically linked to /sbin/linker
+  Patching...\e[0m";
+sed -i "s/${sl}/${sbl}/g" "$F_td";
+else
+echo -e "\e[34m
+  $F_td
+  This file cannot be patched.
+  Skipping...\e[0m";
+fi
+else
+echo -e "\e[34m
+$F_td
+This is not an ELF file!
+Skipping...\e[0m";
+fi
+}
+for F in $arg_s; do
+if [ -f "$F" ]; then
+if_file "$F"
+elif [ -d "$F" ]; then
+for ob_j in $(find "$F" -type f); do
+if_file "$F"
+done
+else
+echo -e "\e[34m
+  $F
+  Unsupported object type!
+  Skipping...\e[0m";
+fi
+done
+}
+[ -z "$@" ] && ( echo "
+  Usage:
+    ${0##*/} <dir> [<dirs> <files> ...]
+  or
+    ${0##*/} <file> [<files> <dirs> ...]
+
+  Script for relink Android ELF files
+  from /sbin/linker(64) to
+  /system/bin/linker(64)
+"; exit; )
+main_funk "$@"
+exit
